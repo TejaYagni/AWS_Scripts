@@ -1,0 +1,50 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "To create a lambda function and a gateway to get schema ",
+    "Parameters": {
+        "Selection": {
+            "AllowedValues": ["Glue Database","s3 Bucket"],
+            "Description": "Enter the service that you want to spin up",
+            "Type": "String"
+        }
+    },
+    "Conditions": {
+        "CreateS3Bucket": {"Fn::Equals": [{"Ref": "Selection"}, "s3 Bucket"]},
+        "CreateGlueDatabase": {"Fn::Equals": [{"Ref": "Selection"}, "Glue Database"]}
+    },
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Condition": "CreateS3Bucket",
+            "Properties": {
+              "AccessControl" : "PublicReadWrite"  
+            }
+        },
+        "GlueDatabase": {
+            "Type": "AWS::Glue::Database",
+            "Condition": "CreateGlueDatabase",
+            "Properties": {
+                "DatabaseInput": {
+                    "Name": "gluedb"
+                },
+                "CatalogId": {
+                    "Ref": "AWS::AccountId"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "S3BucketName" : {
+            "Value": {
+                "Ref": "S3Bucket"
+            },
+            "Condition": "CreateS3Bucket"
+        },
+        "GlueDBName" : {
+            "Value": {
+                "Ref": "GlueDatabase"
+            },
+            "Condition": "CreateGlueDatabase"
+        }
+    }
+}
